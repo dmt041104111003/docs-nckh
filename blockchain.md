@@ -1,8 +1,34 @@
 # Chuỗi khối: Tiền giữ hộ, Tranh chấp & Điểm uy tín
 
-**Vấn đề:** Hai bên làm việc từ xa cần **tin tưởng về tiền** (ai giữ, khi nào trả, khi nào hoàn), **cách xử lý khi bất đồng** (tranh chấp có luật rõ), và **học được từ lịch sử** (điểm tin cậy / bất tin cậy để giảm rủi ro lần sau). Chỉ lưu trên máy chủ thường khiến người dùng khó kiểm chứng “ai được tiền” và “điểm có bị sửa tay hay không”.
+**Vấn đề:** Mô hình **làm việc từ xa** đòi hỏi **đảm bảo thanh toán** (bên giữ quỹ, điều kiện giải ngân, hoàn trả), **cơ chế tranh chấp có thể kiểm chứng**, và **tín hiệu uy tín lặp lại** (UT/KUT) để giảm rủi ro đối tác. Nếu chỉ dựa **CSDL tập trung**, bên thứ ba khó **xác minh độc lập** việc phân bổ tiền và **toàn vẹn** lịch sử điểm.
 
-**Cách xử lý:** Dự án dùng **chuỗi khối** để **khóa tiền trong hợp đồng giữ hộ**, chạy **luồng tranh chấp** khi có khiếu nại, và ghi **bảng uy tín** (quy tắc cộng trừ trong hợp đồng triển khai) sau các sự kiện như hoàn việc, hết hạn, kết thúc tranh chấp. **Máy chủ nghiệp vụ** đồng bộ trạng thái tin, gửi giao dịch khi cần (kể cả bước **khóa vận hành** cho hết hạn / hoàn tiền), nhận **mã giao dịch** từ người dùng (**ví**). Trên máy chủ có thể giữ **bản sao** điểm để hiển thị nhanh — cần **khớp** với chuỗi khi coi chuỗi là chuẩn.
+**Cách xử lý:** Gắn **chuỗi khối công khai** (hệ Aptos) làm **lớp tin cậy** cho **ký quỹ**, **xử lý tranh chấp** và **ghi nhận điểm uy tín** sau các **mốc nghiệp vụ** (nghiệm thu, hết hạn theo cam kết, đóng tranh chấp). **Máy chủ nghiệp vụ** đồng bộ **trạng thái** trong **cơ sở dữ liệu** với chuỗi, dùng **ví vận hành** được phép cho **giao dịch tự động**, đồng thời lưu **mã băm giao dịch** do **ví người dùng** ký. **Bản sao điểm uy tín** trên CSDL phục vụ **đọc nhanh** và cần **khớp** với chuỗi khi lấy **sổ cái phân tán** làm chuẩn.
+
+## Kiến trúc và công nghệ chuỗi khối trong nền tảng
+
+### Vai trò kiến trúc
+
+**Chuỗi khối** ở đây không thay thế **hệ quản trị cơ sở dữ liệu** của nền tảng. CSDL vẫn lưu **tin tuyển**, **đơn ứng tuyển**, **tin nhắn**, **hồ sơ người dùng** — những dữ liệu cần **truy vấn linh hoạt** và **cập nhật thường xuyên**. Chuỗi khối đảm nhận phần **cần minh bạch, khó đơn phương thay đổi sau khi đã cam kết**: **số dư ký quỹ**, **điều kiện giải ngân**, **luồng tranh chấp** và **điểm uy tín** theo **quy tắc đã triển khai trong hợp đồng thông minh**.
+
+### Hợp đồng thông minh và ngôn ngữ triển khai
+
+**Hợp đồng thông minh** là **bộ quy tắc tự động** chạy trên mạng, xác định **ai được phép gọi thao tác nào** và **trạng thái quỹ / tranh chấp / uy tín** chuyển thế nào khi đủ điều kiện. Nền tảng dùng **ngôn ngữ Move** trên **Aptos** — đặc thù là **kiểm tra tài nguyên và quyền sở hữu** chặt chẽ, phù hợp **tài sản và trạng thái** cần **an toàn**. Người đọc tài liệu luồng chỉ cần hiểu: mọi **thay đổi có hiệu lực kinh tế** trên chuỗi đều đi qua **giao dịch** được **xác thực** theo quy tắc mạng.
+
+### Giao dịch, chữ ký và danh tính trên chuỗi
+
+Mỗi **giao dịch** là một **gói thao tác** người dùng hoặc hệ thống gửi lên mạng. **Chữ ký bằng ví** chứng minh **chủ thể** đồng ý (ví dụ: **khóa ký quỹ**, **chấp nhận nghiệm thu**, **mở tranh chấp**). **Địa chỉ ví** là **định danh** gắn với **điểm uy tín** và **luồng tiền**. Một số bước **đến hạn** (quá hạn ký, quá hạn nộp bài, **kết thúc thời gian chứng cứ**…) được **máy chủ nghiệp vụ** hoặc **bộ lập lịch** thực hiện bằng **ví vận hành** đã được **phân quyền** trong thiết kế hợp đồng — để **tự động hóa** mà vẫn **kiểm chứng được** trên chuỗi.
+
+### Ký quỹ và trạng thái công việc
+
+**Ký quỹ** là cơ chế **giữ tiền trong hợp đồng** cho đến khi **điều kiện nghiệp vụ** thỏa (ví dụ **nghiệm thu**, **hoàn tiền** khi không tuyển được, **chuyển sang tranh chấp**). Trạng thái **“đang mở tuyển / đang thực hiện / chờ duyệt / đã đóng”** được **ăn khớp** giữa **CSDL** (để ứng dụng hiển thị) và **trạng thái on-chain** (để **đảm bảo tiền**). Khi hai nguồn lệch, **ưu tiên đối soát** theo **chính sách triển khai** (thường lấy **chuỗi** làm chuẩn cho **tiền và uy tín**).
+
+### Sổ uy tín và cập nhật có kiểm soát
+
+**UT** (độ tin cậy) và **KUT** (độ bất tin cậy) là **chỉ số nghiệp vụ** được **cộng trừ** khi có **sự kiện** tương ứng. **Cập nhật điểm** không nên là thao tác **tùy tiện**: thiết kế hướng tới việc **chỉ luồng ký quỹ / tranh chấp hợp lệ** mới kích hoạt **ghi nhận**, tránh **can thiệp tay** trái quy tắc. Ai cũng có thể **đọc công khai** bảng điểm theo địa chỉ — tăng **trách nhiệm giải trình** giữa các bên.
+
+### Rủi ro và giới hạn công nghệ
+
+Chuỗi khối **không** giải quyết tranh chấp **pháp lý ngoài nền tảng**; nó **mã hóa** phần **đã thỏa thuận** trong hợp đồng. **Phí mạng**, **độ trễ xác nhận** và **sai lệch đồng bộ** với CSDL là **rủi ro vận hành** cần **giám sát**. Tài liệu luồng **không** thay cho **điều khoản pháp lý** hay **mô tả kỹ thuật triển khai chi tiết** — chỉ cố định **vai trò kiến trúc** trong hệ sinh thái freelancer.
 
 ---
 
@@ -44,7 +70,7 @@ flowchart TB
 1. **Người đăng việc** khóa tiền vào **hợp đồng giữ hộ** khi đăng tin (theo điều khoản và bước ký).  
 2. Theo tiến độ, tiền **trả cho người làm**, **hoàn cho chủ tin**, hoặc chuyển sang **tranh chấp** — tùy trạng thái, chữ ký và **hạn tự động**.  
 3. **Máy chủ** lưu trạng thái nghiệp vụ, mã khóa ký quỹ, **mã giao dịch**, mã tranh chấp trên chuỗi; có thể gửi giao dịch bổ sung khi hết hạn hoặc sau phân xử.  
-4. **Điểm tin cậy / bất tin cậy (UT/KUT)** được **cập nhật trong phần hợp đồng “uy tín”** khi các giao dịch **giữ tiền hộ** (và nhánh **tranh chấp** gắn với đó) chạy xong — lưu **theo địa chỉ ví**; ai cũng có thể **đọc lại điểm** qua hàm chỉ đọc trên chuỗi. **Cơ sở dữ liệu** có thể lưu bản sao; nếu coi chuỗi là chuẩn thì bản sao phải **khớp** sau mỗi giao dịch liên quan.
+4. **Điểm tin cậy / bất tin cậy (UT/KUT)** được **cập nhật trong hợp đồng uy tín** khi các giao dịch **ký quỹ** (và nhánh **tranh chấp** liên quan) **hoàn tất hợp lệ** — ánh xạ **theo địa chỉ ví**; bất kỳ ai cũng có thể **đọc công khai** trên mạng. **Cơ sở dữ liệu** có thể lưu **bản sao** phục vụ hiển thị; nếu coi **chuỗi** là chuẩn thì bản sao phải **đồng bộ** sau mỗi giao dịch liên quan.
 
 ---
 
@@ -84,7 +110,7 @@ flowchart TB
 5. **Quá hạn ký / quá hạn nộp:** máy chủ hoặc lịch có thể gửi giao dịch **bỏ người quá hạn ký** / **bỏ người quá hạn nộp** cho khớp nghiệp vụ.  
 6. **Tranh chấp:** ký quỹ gắn vụ tranh chấp cho đến khi có kết quả.
 
-**Bước ký thường do máy chủ gửi** (khi hết hạn nhận hồ sơ, hủy giữ hộ, bỏ người quá hạn ký/nộp, tự duyệt khi hết hạn nghiệm thu…) tương ứng các **thao tác công khai** trong phần hợp đồng giữ tiền hộ — chi tiết kỹ thuật nằm trong mã nguồn phía máy chủ và hợp đồng.
+**Các bước tự động hết hạn** thường do **máy chủ nghiệp vụ** (kèm **ví vận hành** được phép) phát **giao dịch** tương ứng **thao tác công khai** trong hợp đồng ký quỹ — ví dụ: hết hạn nhận hồ sơ, hủy ký quỹ, loại ứng viên quá hạn ký hoặc nộp, **tự động nghiệm thu** khi hết thời gian duyệt theo luật tin.
 
 ---
 
@@ -162,7 +188,7 @@ Luồng theo vai: [người đăng việc](poster.md), [người nhận việc](
 | Tranh chấp | Hết hạn chứng cứ / xử lý quá hạn | |
 | Tranh chấp | Mở vòng bỏ phiếu | |
 | Uy tín | Thường **không** gọi riêng — **đi kèm** giao dịch giữ hộ khi luật trong hợp đồng kích hoạt | Hoàn việc, hết hạn, xong tranh chấp |
-| Uy tín | **Đọc** điểm để hiển thị / đối soát | Hàm chỉ đọc trên chuỗi |
+| Uy tín | **Đọc** điểm để hiển thị / đối soát | Truy vấn **chỉ đọc** trên mạng chuỗi khối |
 
 Người dùng ký các bước tạo tin, chọn người, duyệt bài, mở tranh chấp… bằng **ví**; **mã giao dịch** lưu kèm tin / tranh chấp trên máy chủ. **Cập nhật uy tín** đi kèm các giao dịch **giữ tiền hộ** khi điều kiện trong hợp đồng thỏa (xem mục 4).
 

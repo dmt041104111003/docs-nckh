@@ -1,8 +1,8 @@
-# Người nhận việc
+# Người nhận việc (freelancer)
 
-**Vấn đề:** Người tìm việc cần **thấy rõ tin phù hợp**, **nộp hồ sơ có kiểm soát**, **được trả công xứng đáng** sau khi làm xong, và nếu bị khiếu nại oan phải **phản hồi có hạn**; nếu không, dễ **chọn nhầm tin**, **thiệt tiền**, hoặc **mất điểm uy tín** vì hiểu sai thứ tự bước.
+**Vấn đề:** Ứng viên cần **đánh giá độ phù hợp tin**, **nộp hồ sơ trong phạm vi kiểm soát phiên bản**, **nhận thanh toán đúng điều kiện nghiệm thu**, và trong tranh chấp phải **tuân thời hạn phản hồi**—nếu không sẽ **chọn sai cơ hội**, **tổn thất tài chính**, hoặc **biến động UT/KUT** do không nắm chuỗi trạng thái.
 
-**Cách xử lý:** Vai **người nhận việc** theo lộ trình **tìm tin → (chấm CV trước khi nộp nếu cần) → ứng tuyển → được chọn → ký → làm và nộp bài → chờ duyệt / sửa → hoàn thành hoặc tham gia tranh chấp**; chi tiết trạng thái và sơ đồ dưới đây.
+**Cách xử lý:** Vai trò **người nhận việc** đi theo **máy trạng thái**: **tìm kiếm tin → (tùy chọn: chấm điểm CV trước nộp) → ứng tuyển → được trúng tuyển → ký hợp đồng → thực hiện & nộp bàn giao → chờ duyệt / chỉnh sửa → kết thúc hoặc nhánh tranh chấp**; chi tiết và sơ đồ dưới đây.
 
 ## Trạng thái công việc (tóm tắt)
 

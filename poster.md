@@ -1,16 +1,13 @@
-# Người đăng việc / bên thuê
+# Người đăng việc / bên thuê (vai trò `ROLE_EMPLOYER`)
 
-**Vấn đề:** Bên thuê cần **thu hút ứng viên đủ chất**, **chọn đúng người**, **giữ tiền an toàn** đến khi việc xong, **duyệt bài đúng hạn**, và khi bất đồng phải có **lối tranh chấp** rõ — nếu không, rủi ro lộn xộn tiền, chậm phản hồi, hoặc mất uy tín.
-
-**Cách xử lý:** Vai **người đăng việc** đi theo lộ trình **đăng tin → mở nhận hồ sơ → có thể chấm CV hỗ trợ → chọn người → hai bên ký → duyệt hoặc yêu cầu sửa → kết thúc hoặc tranh chấp**; tiền và điểm uy tín gắn với **chuỗi khối** và điều khoản — chi tiết từng sơ đồ dưới đây.
+**Phạm vi nghiệp vụ:** **đăng tin tuyển dụng**, **sàng lọc ứng viên** (kèm chấm điểm CV khi bật), **ký kết hợp đồng điện tử**, **nghiệm thu bàn giao**, và **khởi tạo tranh chấp** khi phát sinh bất đồng sau thực hiện.
 
 ---
 
 ## Trở thành người đăng việc và tạo tin
 
 ```mermaid
-%%{init: {"flowchart": {"curve": "linear", "padding": 8, "rankSpacing": 36}}}%%
-flowchart TB
+flowchart TD
   A[Người dùng đã đăng nhập] --> B[Đăng ký vai trò người thuê]
   B --> C[Có quyền đăng việc]
   C --> D[Tạo tin: nháp hoặc đăng ngay]
@@ -32,10 +29,9 @@ flowchart TB
 ## Quản lý ứng viên và chọn người nhận việc
 
 ```mermaid
-%%{init: {"flowchart": {"curve": "linear", "padding": 8, "rankSpacing": 36}}}%%
-flowchart TB
+flowchart TD
   A[Tin đang mở nhận hồ sơ] --> B[Xem danh sách ứng tuyển]
-  B --> S[Chấm điểm CV tự động — so khớp với mô tả tin]
+  B --> S[Chấm điểm CV AI — so khớp với mô tả tin]
   S --> B2[Cột điểm / sắp theo độ phù hợp]
   B2 --> C{Lựa chọn}
   C --> D[Chấp nhận một người + ký mã giao dịch]
@@ -47,20 +43,19 @@ flowchart TB
 **Các bước luồng nghiệp vụ**
 
 1. Tin đang **mở nhận hồ sơ**; người thuê xem danh sách người đã ứng tuyển.  
-2. **Chấm điểm CV** (phần nền tảng): với ứng viên có file đính kèm, hệ thống tải CV, so với **tiêu đề + mô tả + yêu cầu** của tin, hiển thị điểm và **sắp danh sách** — bước **sàng lọc** trước khi quyết định.  
+2. **Chấm điểm CV** (module nền tảng): với ứng viên có file đính kèm, hệ thống tải CV, so với **tiêu đề + mô tả + yêu cầu** của tin, hiển thị điểm và **sắp danh sách** — bước **sàng lọc** trước khi quyết định.  
 3. **Từ chối** một hoặc nhiều hồ sơ hoặc **đóng tin** nếu không còn tuyển.  
 4. **Chấp nhận một người** → **chờ ký hợp đồng**; thường kèm xác nhận / ký trên chuỗi (tiền giữ hộ).  
 5. Ứng viên không được chọn nhận trạng thái từ chối theo quy định nền tảng.
 
-Chi tiết màn hình và tích hợp: [luồng chấm điểm CV](cv-ai-scoring.md).
+Chi tiết kỹ thuật và API: **`cv-ai-scoring.md`**.
 
 ---
 
 ## Hợp đồng (phía người thuê)
 
 ```mermaid
-%%{init: {"flowchart": {"curve": "linear", "padding": 8, "rankSpacing": 36}}}%%
-flowchart TB
+flowchart TD
   A[Đã chọn người nhận việc] --> B[Tạo hoặc xem điều khoản]
   B --> C[Hai bên ký theo thứ tự hệ thống]
   C --> D{Trước khi ký xong}
@@ -80,8 +75,7 @@ flowchart TB
 ## Nhận sản phẩm và tranh chấp
 
 ```mermaid
-%%{init: {"flowchart": {"curve": "linear", "padding": 8, "rankSpacing": 36}}}%%
-flowchart TB
+flowchart TD
   A[Người nhận việc đã nộp bài] --> B{Người thuê}
   B -->|Đồng ý| C[Duyệt bài + mã giao dịch]
   B -->|Cần sửa| D[Yêu cầu làm lại + ghi chú + mã giao dịch]
@@ -101,8 +95,7 @@ flowchart TB
 ## Hủy tin, đăng lại, rút lui
 
 ```mermaid
-%%{init: {"flowchart": {"curve": "linear", "padding": 8, "rankSpacing": 36}}}%%
-flowchart TB
+flowchart TD
   A[Tin đã hủy hoặc muốn đăng lại] --> B[Đăng lại tin — nháp hoặc giữ tiền / ký giao dịch]
   A --> C[Xin hủy phía người thuê + lý do]
   A --> D[Xóa tin hoặc chuyển nháp ↔ đăng]
@@ -118,9 +111,9 @@ flowchart TB
 
 ## Điểm uy tín (phía người đăng việc)
 
-**Điểm tín nhiệm (UT)** và **bất tín nhiệm (KUT)** hiển thị trên **hồ sơ** và **tin tuyển** (người nhận việc xem uy tín chủ tin). Chi tiết trong **màn điều khoản hệ thống** trên ứng dụng.
+**Điểm tín nhiệm (UT)** và **bất tín nhiệm (KUT)** hiển thị trên **hồ sơ** và **tin tuyển** (người nhận việc xem uy tín chủ tin). Chi tiết trong **điều khoản hệ thống** (`SystemTermsDisplay`).
 
-**Lưu ý triển khai:** Quy tắc cộng trừ **đã có trong hợp đồng trên chuỗi** và có thể được sao chép trên máy chủ — bảng dưới là **chuẩn nghiệp vụ**; xem thêm [chuỗi khối, mục 4](blockchain.md).
+**Triển khai:** Trường và hàm cộng trừ đã có trong mã; có thể chưa gắn hết mọi sự kiện — bảng dưới là **chuẩn nghiệp vụ**.
 
 | Tình huống (người thuê) | UT | KUT |
 | --- | --- | --- |
@@ -130,26 +123,21 @@ flowchart TB
 | **Quá hạn nghiệm thu** | −5 | +10 |
 
 ```mermaid
-%%{init: {"flowchart": {"curve": "linear", "padding": 10, "rankSpacing": 28}}}%%
-flowchart TB
-  subgraph cong[Tăng tin cậy]
-    A[Duyệt đúng hạn hoặc thắng tranh chấp] --> B[UT chủ tin tăng]
-  end
-  subgraph tru[Giảm tin / tăng bất tin]
-    C[Quá hạn nghiệm thu hoặc thua tranh chấp] --> D[UT giảm — KUT tăng]
-  end
+flowchart TD
+  A[Duyệt đúng hạn / thắng tranh chấp] --> B[(+UT chủ tin)]
+  C[Quá hạn nghiệm thu / thua tranh chấp] --> D[(−UT, +KUT chủ tin)]
 ```
 
 **Các bước luồng nghiệp vụ**
 
-1. Sau **nghiệm thu**, **kết quả tranh chấp**, hoặc **máy quét hết hạn** (xem [hệ thống tự động](system.md)), hệ thống cập nhật UT/KUT cho chủ tin (trên chuỗi và/hoặc bản sao máy chủ).  
+1. Sau **nghiệm thu**, **kết quả tranh chấp**, hoặc **máy quét hết hạn** (xem `system.md`), hệ thống có thể cập nhật UT/KUT cho chủ tin.  
 2. Bạn đối tác dùng điểm làm **tín hiệu nhanh** khi chọn tin.  
 
-Điểm cho **người nhận việc** (quá hạn ký, nộp bài, rút…) — xem [người nhận việc](freelancer.md).
+Điểm cho **người nhận việc** (quá hạn ký, nộp bài, rút…) — xem **`freelancer.md`**.
 
 ---
 
 ## Ghi chú
 
 - Một tài khoản có thể vừa **đăng việc** vừa **nhận việc** nếu được gán nhiều vai trò.
-- Bước liên quan **tiền giữ hộ / hoàn tiền** phụ thuộc cấu hình chuỗi khối và trạng thái công việc; hạn tự động xem [hệ thống tự động](system.md).
+- Bước liên quan **tiền giữ hộ / hoàn tiền** phụ thuộc cấu hình chuỗi khối và trạng thái công việc; hạn tự động xem `system.md`.

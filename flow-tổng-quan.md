@@ -1,4 +1,6 @@
-# Flow tổng quan
+# Luồng tổng quan nền tảng
+
+Tóm lược **tác nhân** (chủ tin · người nhận việc · trọng tài), **hạ tầng** (front-end, **máy chủ nghiệp vụ**, **microservice chấm CV**, **chuỗi khối**, **bộ lập lịch**) và **vòng đời tin tuyển → hợp đồng → bàn giao → tranh chấp**. Thuật ngữ thống nhất: [kiến trúc — bảng thuật ngữ](architecture.md).
 
 ---
 
@@ -10,9 +12,9 @@
 | **Người nhận việc** | **Xem điểm phù hợp CV–tin**, ứng tuyển, ký hợp đồng, làm và nộp sản phẩm | [freelancer.md](freelancer.md) |
 | **Trọng tài / chuyên gia** | Chỉ xử lý **tranh chấp** giữa hai bên | [admin.md](admin.md) |
 | **Máy tự động** | Hết hạn, tiền giữ hộ, thông báo, lịch chạy | [system.md](system.md) |
-| **Chấm điểm CV** | **Bước tuyển dụng:** so khớp CV với mô tả việc trên màn ứng tuyển và bảng ứng viên | [cv-ai-scoring.md](cv-ai-scoring.md) |
-| **Điểm uy tín** | UT/KUT: **lưu trên chuỗi** trong hợp đồng uy tín (bảng số — [blockchain.md](blockchain.md) mục 4); theo vai: [poster.md](poster.md) · [freelancer.md](freelancer.md) · [admin.md](admin.md) · máy quét [system.md](system.md) (mục 4) |
-| **Chuỗi khối** | Giữ tiền hộ, tranh chấp, **cập nhật điểm uy tín**; cơ sở dữ liệu có thể giữ bản sao | [blockchain.md](blockchain.md) |
+| **Chấm điểm CV (AI)** | Giai đoạn tuyển: **inference** so khớp CV–**job text** trên màn ứng tuyển / bảng ứng viên (API tách **`scan_chamdiemCV`**) | [cv-ai-scoring.md](cv-ai-scoring.md) |
+| **Điểm uy tín** | UT/KUT: **ghi trên chuỗi** trong hợp đồng uy tín ([blockchain.md](blockchain.md) mục 4); CSDL có thể giữ **bản sao đọc (mirror)** cần **đối soát**; vai & sự kiện: [poster](poster.md) · [freelancer](freelancer.md) · [admin](admin.md) · [system](system.md) mục 4 |
+| **Chuỗi khối** | **Escrow**, tranh chấp, **cập nhật UT/KUT**; đối soát với **mã giao dịch** | [blockchain.md](blockchain.md) |
 
 **Kiến trúc khối:** [architecture.md](architecture.md)
 
@@ -45,7 +47,7 @@ flowchart TB
 **Các bước luồng nghiệp vụ**
 
 1. **Người đăng việc** tạo tin và mở nhận hồ sơ.  
-2. **Người nhận việc** xem **điểm phù hợp CV–tin** (bộ chấm điểm), rồi **ứng tuyển**; **người đăng việc** có thể **chấm điểm hàng loạt** trên bảng ứng viên trước khi chọn người.  
+2. **Người nhận việc** xem **điểm / rank** CV–tin (API chấm điểm), rồi **gửi đơn**; **chủ tin** có thể chấm **theo từng dòng** hoặc batch trên **bảng ứng viên** trước khi chọn người.  
 3. **Người đăng việc** chọn một người trong danh sách.  
 4. **Hai bên ký hợp đồng** → công việc chuyển sang đang làm.  
 5. **Người nhận việc** nộp sản phẩm; **người đăng việc** duyệt hoặc yêu cầu sửa.  
@@ -84,7 +86,7 @@ flowchart TB
 **Các bước luồng nghiệp vụ**
 
 1. **Đăng việc / nhận việc / trọng tài** đều dùng **giao diện web** → gọi **máy chủ nghiệp vụ** cho tài khoản, tin, hồ sơ, ký quỹ.  
-2. Trong **giai đoạn ứng tuyển**, web gọi **máy chủ chấm điểm** (địa chỉ cấu hình trên giao diện) để hiển thị điểm khớp; **CV chính thức** vẫn lưu qua máy chủ nghiệp vụ.  
+2. Trong **giai đoạn nhận hồ sơ**, front-end gọi **API microservice chấm điểm** (base URL theo **env**) cho **suy luận**; **đơn & CV canonical** vẫn qua **máy chủ nghiệp vụ**.  
 3. Máy chủ lưu **dữ liệu** và xử lý **tiền giữ hộ** qua **chuỗi khối** khi có giao dịch.  
 4. **Lịch tự động** chạy nền: đồng bộ hạn, trạng thái, giao dịch với chuỗi.
 
