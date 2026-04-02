@@ -1,4 +1,4 @@
-# Trọng tài / chuyên gia tranh chấp (vai trò `ROLE_ADMIN`)
+# Trọng tài / chuyên gia giải quyết (vai trò `ROLE_ADMIN`)
 
 **Vấn đề:** Khi hai bên **mâu thuẫn sau bàn giao**, cần **bên thứ ba trung lập** có quy trình minh bạch; nếu thiếu vai này, tranh chấp **kéo dài** và ảnh hưởng **ký quỹ** và **điểm uy tín**.
 
@@ -22,7 +22,7 @@
 
 ```mermaid
 flowchart TD
-  A[Chuyên gia đăng nhập] --> B[Danh sách vụ tranh chấp chờ xử lý]
+  A[Chuyên gia giải quyết đăng nhập] --> B[Danh sách vụ tranh chấp chờ xử lý]
   B --> C{Hướng xử lý}
   C --> D[Yêu cầu người nhận việc phản hồi + thời hạn]
   C --> E[Phân xử: bên thuê hay bên nhận việc + ghi chú]

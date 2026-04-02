@@ -10,7 +10,7 @@ Tóm lược **tác nhân** (chủ tin · người nhận việc · trọng tài
 | ---- | ---------- | -------- |
 | **Người đăng việc** | Đăng tin, **chấm điểm CV ứng viên**, chọn người, duyệt bài, tranh chấp nếu cần | [poster.md](poster.md) |
 | **Người nhận việc** | **Xem điểm phù hợp CV–tin**, ứng tuyển, ký hợp đồng, làm và nộp sản phẩm | [freelancer.md](freelancer.md) |
-| **Trọng tài / chuyên gia** | Chỉ xử lý **tranh chấp** giữa hai bên | [admin.md](admin.md) |
+| **Trọng tài / chuyên gia giải quyết** | Chỉ xử lý **tranh chấp** giữa hai bên | [admin.md](admin.md) |
 | **Máy tự động** | Hết hạn, tiền giữ hộ, thông báo, lịch chạy | [system.md](system.md) |
 | **Chấm điểm CV (AI)** | Giai đoạn tuyển: **inference** so khớp CV–**job text** trên màn ứng tuyển / bảng ứng viên (API tách **`scan_chamdiemCV`**) | [cv-ai-scoring.md](cv-ai-scoring.md) |
 | **Điểm uy tín** | UT/KUT: **ghi trên chuỗi** trong hợp đồng uy tín ([blockchain.md](blockchain.md) mục 4); CSDL có thể giữ **bản sao đọc (mirror)** cần **đối soát**; vai & sự kiện: [poster](poster.md) · [freelancer](freelancer.md) · [admin](admin.md) · [system](system.md) mục 4 |
