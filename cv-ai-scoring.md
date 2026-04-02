@@ -2,19 +2,19 @@
 
 **Phạm vi:** Bộ chấm điểm CV triển khai **độc lập**, chuyên **suy luận**, kết nối [**server**](thuat-ngu.md#server) nền tảng. Kiến trúc: [architecture](architecture.md). Thuật ngữ: [bảng thuật ngữ](thuat-ngu.md).
 
-**Bối cảnh:** Người đăng việc cần sàng lọc khối lượng đơn ứng tuyển; người làm tự do cần đánh giá sơ bộ mức phù hợp giữa hồ sơ và tin tuyển trước khi nộp. Xử lý thuần thủ công tốn thời gian và khó đảm bảo nhất quán tiêu chí.
+**Vì sao cần AI:** Người đăng việc phải xem nhiều đơn; làm tay thì tốn thời gian và dễ lệch tiêu chí. Người làm tự do cũng cần biết nhanh hồ sơ của mình phù hợp với tin hay không trước khi nộp.
 
-**Phương án:** So khớp nội dung CV với mô tả công việc, trả về **điểm số** và **nhãn phân loại** trên màn hình ứng tuyển hoặc bảng ứng viên. Việc **chấp nhận hồ sơ** và **ghi nhận đơn ứng tuyển** do người dùng thực hiện qua **server**; **Chấm điểm AI** chỉ **hỗ trợ** quyết định, không thay thế phán quyết pháp lý hay quy trình nghiệp vụ nội bộ.
+**Cách hệ thống làm:** So khớp nội dung CV với mô tả công việc để trả về **điểm số** và **nhãn** trên màn hình ứng tuyển hoặc bảng ứng viên. Việc **chấp nhận hồ sơ** và **ghi nhận đơn ứng tuyển** vẫn do người dùng thực hiện qua **server**; **Chấm điểm AI** chỉ **hỗ trợ** quyết định.
 
 ## Vai trò của bộ chấm điểm CV
 
-- **Tách kiến trúc** khỏi server nghiệp vụ nhằm cô lập tải tính toán, thuận tiện mở rộng và nâng cấp mô hình.
+- Bộ chấm điểm CV chạy **tách** khỏi server nghiệp vụ để giảm tải và dễ nâng cấp mô hình.
 - **Dữ liệu hệ thống chính** gồm đơn ứng tuyển CV đã lưu và trạng thái tin trên **server** và **cơ sở dữ liệu**; bộ chấm điểm CV chỉ nhận bản sao tạm hoặc đoạn văn để tính điểm.
-- Tệp gửi vào bước chấm thường là **bản tạm**; đầu ra gồm **điểm**, **nhãn** và **văn bản giải thích ngắn** phục vụ hiển thị.
+- Tệp đầu vào thường là **bản tạm**; đầu ra gồm **điểm**, **nhãn** và **đoạn giải thích ngắn** để hiển thị.
 
 ## Chuỗi xử lý (B1 → B5)
 
-**Ràng buộc thiết kế:** Không bổ sung bước xếp hạng riêng sau lọc nhanh. Sau **B3 ([Cosine similarity](thuat-ngu.md#cosine))** hệ thống chuyển sang **B4 ([CrossEncoder](thuat-ngu.md#crossencoder) [rerank](thuat-ngu.md#rerank))** cho từng cặp cần chấm; thứ tự ưu tiên cuối cùng căn cứ **điểm sau B5**.
+**Giới hạn trong thiết kế:** Không thêm bước xếp hạng riêng sau bước lọc nhanh. Sau **B3 ([Cosine similarity](thuat-ngu.md#cosine))** hệ thống chuyển sang **B4 ([CrossEncoder](thuat-ngu.md#crossencoder) [rerank](thuat-ngu.md#rerank))** cho các cặp cần chấm; điểm cuối cùng căn cứ **điểm sau B5**.
 
 **B1 — Tiền xử lý văn bản**  
 Chuyển chữ thường, loại bỏ khoảng trắng và xuống dòng thừa.

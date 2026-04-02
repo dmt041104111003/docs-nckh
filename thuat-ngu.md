@@ -16,7 +16,7 @@
 
 ## AI (chấm điểm CV)
 
-**Trí tuệ nhân tạo** ở đây chỉ phần **suy luận mô hình**: đọc văn bản CV và mô tả việc, trả về **điểm** và **nhãn** hỗ trợ người xem — **không** thay người quyết định tuyển hay ký hợp đồng. Pipeline kỹ thuật: [cv-ai-scoring](cv-ai-scoring.md).
+**Trí tuệ nhân tạo** ở đây chỉ phần **suy luận mô hình**: đọc văn bản CV và mô tả việc, trả về **điểm** và **nhãn** để hỗ trợ người xem — **không** thay người quyết định tuyển hay ký hợp đồng. Chuỗi bước kỹ thuật: [cv-ai-scoring](cv-ai-scoring.md).
 
 ---
 

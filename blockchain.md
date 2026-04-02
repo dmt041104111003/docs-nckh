@@ -28,7 +28,7 @@ Một số việc **đến hạn** do **server** (request) hoặc **cron job** g
 
 ## Điểm tin cậy và bất tin cậy
 
-Hai chỉ số nghiệp vụ được cộng trừ khi có **sự kiện** đúng luật. Cập nhật điểm **không** tùy tiện: chỉ luồng giữ tiền và tranh chấp hợp lệ mới kích hoạp. Ai cũng có thể **đọc** bảng điểm theo địa chỉ trên mạng.
+Hai chỉ số nghiệp vụ được cộng trừ khi có **sự kiện** đúng luật. Cập nhật điểm **không** tùy tiện: chỉ luồng giữ tiền và tranh chấp hợp lệ mới kích hoạt. Ai cũng có thể **đọc** bảng điểm theo địa chỉ trên mạng.
 
 ---
 

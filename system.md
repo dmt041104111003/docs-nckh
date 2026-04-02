@@ -21,7 +21,7 @@ Phần **máy chạy nền** không cần người bấm từng bước: các [*
 
 ## Quét hạn tin và tranh chấp
 
-Mỗi lần một **cron job** chạy (theo **cron expression** đã cấu hình), worker so **thời gian thực** với **hạn** trên tin và trong vụ tranh chấp.
+Mỗi lần một **cron job** chạy (theo **cron expression** đã cấu hình), job nền sẽ đối chiếu **thời gian hiện tại** với **hạn** trên tin và trong vụ tranh chấp.
 
 ```mermaid
 flowchart TD
@@ -72,7 +72,7 @@ flowchart LR
 
 ## Chấm điểm CV trong luồng tuyển
 
-Khi **người làm tự do** mở ứng tuyển hoặc **người đăng việc** chấm trên bảng ứng viên, giao diện gọi **bộ chấm điểm CV** (chạy tách runtime). Bộ chấm điểm đọc CV và mô tả việc rồi trả điểm theo pipeline trong [cv-ai-scoring](cv-ai-scoring.md).
+Khi **người làm tự do** mở màn ứng tuyển hoặc **người đăng việc** chấm trên bảng ứng viên, giao diện gọi **bộ chấm điểm CV**. Bộ chấm điểm đọc CV và mô tả việc rồi trả về điểm theo quy trình trong [cv-ai-scoring](cv-ai-scoring.md).
 
 ```mermaid
 flowchart TD

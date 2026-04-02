@@ -47,7 +47,7 @@ flowchart TB
 
 1. **Trọng tài chuyên môn**, **người đăng việc**, **người làm tự do** đều dùng **server** qua một cổng web.  
 2. Bước ví khi liên quan hợp đồng và tiền.  
-3. Vòng đời tin trong giai đoạn tuyển: **người đăng việc** tạo tin; **người làm tự do** ứng tuyển kèm CV; khi bật tính năng, **server** gọi **bộ chấm điểm CV** để so khớp và hiển thị **điểm/nhãn**; người đăng việc chọn ứng viên để tạo **hợp đồng**. Luồng chi tiết: [flow-tổng-quan](flow-tổng-quan.md), kỹ thuật chấm: [cv-ai-scoring](cv-ai-scoring.md).  
+3. Giai đoạn tuyển: **người đăng việc** tạo tin; **người làm tự do** ứng tuyển kèm CV. Khi bật tính năng, **server** gọi **bộ chấm điểm CV** để trả về **điểm** và **mức phù hợp**, rồi **người đăng việc** xem và chọn ứng viên để tạo **hợp đồng**. Xem thêm: [flow-tổng-quan](flow-tổng-quan.md), [cv-ai-scoring](cv-ai-scoring.md).  
 4. Tiền giữ tranh chấp và rút tiền.  
 5. Nhắn tin và thông báo.  
 6. **Điểm uy tín** theo luật trên blockchain sau các mốc giữ tiền và tranh chấp xem [blockchain](blockchain.md). Chi tiết vai: [người đăng việc](poster.md), [người làm tự do](freelancer.md), [trọng tài](trong-tai.md), [hệ thống](system.md).
