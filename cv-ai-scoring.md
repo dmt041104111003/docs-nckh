@@ -1,64 +1,67 @@
-# Luồng AI hỗ trợ sàng lọc & duyệt hồ sơ (chấm điểm CV)
+# Luồng chấm điểm CV bằng AI
 
-**Phạm vi:** Tích hợp **dịch vụ chấm điểm** (triển khai **độc lập**, dạng **máy chủ ứng dụng nhẹ** chuyên **suy luận**) với **máy chủ nghiệp vụ** của nền tảng. Thuật ngữ tổng thể: [kiến trúc — bảng chung](architecture.md).
+**Phạm vi:** Dịch vụ chấm điểm triển khai **độc lập**, chuyên **suy luận**, kết nối **server** nền tảng. Thuật ngữ chung: [architecture](architecture.md).
 
-**Vấn đề:** **Chủ tin** phải **sàng lọc** nhiều **đơn ứng tuyển**; **người nhận việc** cần **tín hiệu sớm** về **điểm và thứ tự đọc** so với **tin tuyển** trước khi gửi đơn. Duyệt thủ công tốn **chi phí thời gian**, dễ **bỏ sót ứng viên** và **thiếu nhất quán tiêu chí**.
+**Bối cảnh:** Người đăng việc cần sàng lọc khối lượng đơn ứng tuyển; người làm tự do cần đánh giá sơ bộ mức phù hợp giữa hồ sơ và tin tuyển trước khi nộp. Xử lý thuần thủ công tốn thời gian và khó đảm bảo nhất quán tiêu chí.
 
-**Cách xử lý:** Chạy **chuỗi xử lý suy luận** nội bộ (tham số theo **môi trường triển khai**), **ước lượng độ khớp ngữ nghĩa** giữa **bản trích hồ sơ** và **văn bản mô tả việc**, trả **điểm, nhãn và gợi ý sắp xếp** ngay trên **màn ứng tuyển** hoặc **bảng ứng viên**. **Quyết định cuối** luôn có **người trong vòng lặp**: **chấp nhận ứng viên** và **lưu đơn ứng tuyển** chỉ qua **giao diện lập trình** của **máy chủ nghiệp vụ**; dịch vụ chấm điểm **không** thay thế phán quyết pháp lý hay nghiệp vụ.
+**Phương án:** So khớp nội dung CV với mô tả công việc, trả về **điểm số** và **nhãn phân loại** trên màn hình ứng tuyển hoặc bảng ứng viên. Việc **chấp nhận hồ sơ** và **ghi nhận đơn ứng tuyển** do người dùng thực hiện qua **server**; dịch vụ AI **hỗ trợ ra quyết định**, không thay thế phán quyết pháp lý hay quy trình nghiệp vụ nội bộ.
 
-## Kiến trúc và công nghệ dịch vụ chấm điểm
+## Vai trò dịch vụ chấm điểm
 
-### Vai trò kiến trúc
+- **Tách kiến trúc** khỏi server nghiệp vụ nhằm cô lập tải tính toán, thuận tiện mở rộng và nâng cấp mô hình.
+- **Dữ liệu hệ thống chính** gồm đơn ứng tuyển CV đã lưu và trạng thái tin trên **server** và **cơ sở dữ liệu**; dịch vụ chấm điểm chỉ nhận bản sao tạm hoặc đoạn văn để tính điểm.
+- Tệp gửi vào bước chấm thường là **bản tạm**; đầu ra gồm **điểm**, **nhãn** và **văn bản giải thích ngắn** phục vụ hiển thị.
 
-Dịch vụ chấm điểm là **lớp trí tuệ nhân tạo phụ trợ**, **tách tiến trình** khỏi **máy chủ nghiệp vụ** để: **cô lập tải tính toán nặng**, **mở rộng theo nhu cầu** (nhiều phiên suy luận song song), và **giảm rủi ro** khi nâng cấp mô hình. **Nguồn chân lý** về **đơn ứng tuyển**, **tệp CV đã lưu**, **trạng thái tin** vẫn nằm ở **CSDL nghiệp vụ**; dịch vụ chấm điểm chỉ nhận **bản sao tạm** hoặc **đoạn văn bản** phục vụ **so khớp**.
+## Chuỗi xử lý (B1 → B5)
 
-### Luồng dữ liệu và ranh giới tin cậy
+**Ràng buộc thiết kế:** Không bổ sung bước xếp hạng riêng sau lọc nhanh. Sau **B3 (Cosine similarity)** hệ thống chuyển sang **B4 (CrossEncoder rerank)** cho từng cặp cần chấm; thứ tự ưu tiên cuối cùng căn cứ **điểm sau B5**.
 
-Từ góc nhìn **an toàn và quyền riêng tư**, hồ sơ qua bước chấm thường là **tệp tải lên tạm** hoặc **dữ liệu đã được phép** theo luồng đăng nhập; **không** thay thế **kênh lưu chính thức**. Kết quả trả về là **điểm số, nhãn phân loại, văn bản nhận xét ngắn** — phục vụ **hiển thị**, không mang **hiệu lực pháp lý** tự thân.
+**B1 — Tiền xử lý văn bản**  
+Chuyển chữ thường, loại bỏ khoảng trắng và xuống dòng thừa.
 
-### Chuỗi xử lý công nghệ (ý niệm)
+**B2 — Vector hóa (embedding)**  
+CV (sau tải lên hoặc trích xuất văn bản) và mô tả việc được biểu diễn bằng **vector** trong cùng không gian nhúng để tính **độ tương đồng Cosine**.
 
-1. **Trích và chuẩn hóa văn bản** từ PDF hoặc trường nhập — loại nhiễu định dạng, thống nhất **đơn vị văn bản nhỏ** (từ, cụm) trước khi đưa vào mô hình.  
-2. **Biểu diễn ngữ nghĩa**: đưa đoạn văn vào **không gian vector** sao cho đoạn **gần nhau về nghĩa** có **độ đo gần** cao — nền tảng của **so khớp tương đồng ngữ nghĩa**.  
-3. **Tái xếp hạng**: sau bước lấy điểm nhanh trên tập rút gọn, có thể dùng **bước so sánh sâu** (xem xét **cặp** CV–việc cùng lúc) để **độ chính xác thứ hạng** tốt hơn, đổi lấy **chi phí tính toán** lớn hơn.  
-4. **Hậu xử lý theo quy tắc nghiệp vụ**: ví dụ **trừ điểm** khi **lĩnh vực** lệch xa, **ghép trọng số** giữa các thành phần điểm, **chuẩn hóa** về thang **zero–một trăm**.  
-5. **Kết xuất cho giao diện**: ánh xạ sang **nhãn dễ đọc** và **màu / mức** theo **ngưỡng nội bộ**.
+**B3 — Lọc nhanh (danh sách nhiều CV)**  
+Đầu vào: vector job và danh sách vector CV. Dùng **Cosine** để giảm số lần gọi rerank. Trường hợp **một CV — một tin:** bỏ qua lọc danh sách; Cosine trực tiếp cho **embedding_score**, sau đó vào B4.
 
-### Độ trễ, tài nguyên và vận hành
+**B4 — Rerank (CrossEncoder)**  
+CV và mô tả việc được đưa **đồng thời** vào một lần suy luận nhằm khai thác ngữ cảnh hai chiều. Mô hình **BAAI/bge-reranker-base**: đầu ra qua **Sigmoid**, ánh xạ sang thang **0–100** (**rerank_score**).
 
-**Suy luận** phụ thuộc **kích cỡ mô hình**, **độ dài văn bản**, **bước tái xếp hạng** và **tải máy chủ**. Thực tế triển khai cần **giới hạn đồng thời**, **hàng đợi**, hoặc **bớt bước nặng** trên danh sách dài (ví dụ **lọc gần đúng** trước rồi mới **chấm sâu**). Đây là **cân bằng** giữa **trải nghiệm người dùng** và **chi phí hạ tầng**.
+**B5 — Tổng hợp điểm**  
+Kết hợp embedding và rerank thành **final_score**, áp dụng **penalty** và **boost** như mục 4.
 
-### Rủi ro, thiên lệch và trách nhiệm
+**Chi phí tính toán:** B4 tốn tài nguyên hơn B3. Với nhiều hồ sơ, B3 thực hiện trước; với một cặp, một lần B4 sau khi có **embedding_score**.
 
-Mô hình có thể **thiên lệch** theo dữ liệu huấn luyện, **bỏ sót** kỹ năng mềm hoặc kinh nghiệm **không được viết rõ** trong CV, hoặc **đánh giá sai** khi **tin tuyển** thiếu thông tin. Vì vậy luồng nghiệp vụ luôn coi điểm là **gợi ý**: **chủ tin** chịu **quyết định tuyển**; **người nhận việc** tự **cân nhắc** trước khi nộp đơn.
-
----
-
-## 1. Hai nhánh người dùng (cùng sản phẩm)
-
-### A. Người nhận việc — màn ứng tuyển
-
-1. **Tải CV** lên **máy chủ nghiệp vụ** để lưu và đính kèm đơn ứng tuyển.  
-2. **AI hỗ trợ xem trước:** gửi bản tệp sang **dịch vụ chấm điểm (AI)**, ghép mô tả việc tạm từ **tiêu đề tin + thư giới thiệu**, chạy **phân tích một cặp** → hiển thị **điểm và mức phù hợp** trong hộp thoại — để **tự lọc** (có nên nộp / chỉnh CV hay không) trước khi gửi.  
-3. **Gửi đơn ứng tuyển** qua máy chủ nền tảng (CV đã lưu); bước chấm điểm AI đi **trước hoặc song song** cùng bước nộp, trong cùng luồng trải nghiệm tuyển.
-
-### B. Người đăng việc — bảng ứng viên
-
-1. Lấy tin và danh sách hồ sơ từ **máy chủ nghiệp vụ**.  
-2. **Hỗ trợ lọc danh sách (AI):** với từng ứng viên chờ duyệt có file CV — tải file từ hệ thống → gửi sang **dịch vụ chấm điểm**, mô tả việc ghép từ **tiêu đề + mô tả + yêu cầu** → phân tích từng cặp → **cột điểm / mức khớp** và **sắp xếp** theo độ phù hợp để **rút ngắn thời gian duyệt** và chọn người trong cùng màn quản lý tuyển dụng.
+**Giới hạn mô hình:** Có thể thiên lệch theo dữ liệu huấn luyện, bỏ sót thông tin không được mô tả rõ trong CV, hoặc sai lệch khi tin tuyển thiếu nội dung. **Điểm số mang tính tham khảo**, không thay thế đánh giá của người phụ trách tuyển dụng.
 
 ---
 
-## 2. Sơ đồ: Luồng tích hợp web
+## 1. Kịch bản sử dụng theo vai trò
+
+### Người làm tự do — màn ứng tuyển
+
+1. Tải CV lên **server** để lưu trữ và đính kèm đơn ứng tuyển.  
+2. Có thể **xem trước điểm khớp:** gửi tệp tới dịch vụ chấm điểm, ghép mô tả việc từ tiêu đề tin và thư giới thiệu, chấm **một cặp**, hiển thị điểm và mức phù hợp.  
+3. Gửi đơn qua **server**; bước chấm điểm có thể thực hiện trước hoặc song song với nghiệp vụ nộp đơn.
+
+### Người đăng việc — bảng ứng viên
+
+1. Truy vấn tin và danh sách hồ sơ từ **server**.  
+2. Với từng ứng viên có CV: tải tệp, gọi dịch vụ chấm điểm với mô tả việc ghép từ tiêu đề, phần mô tả và yêu cầu — thu được điểm, cột mức khớp và khả năng sắp xếp để hỗ trợ duyệt hồ sơ.
+
+---
+
+## 2. Sơ đồ tích hợp ứng dụng web
 
 ```mermaid
 %%{init: {"flowchart": {"curve": "linear", "padding": 10, "rankSpacing": 40}}}%%
 flowchart TB
   UI[Màn ứng tuyển / bảng ứng viên]
-  JOB[Máy chủ nghiệp vụ — đơn ứng tuyển & CV chính thức]
+  JOB[Server — đơn ứng tuyển và CV chính thức]
   UP[Tải CV tạm — API chấm điểm]
-  JB[Ghép văn bản việc — API chấm điểm]
-  AN[Suy luận một cặp — điểm / thứ tự gợi ý]
+  JB[Ghép văn bản mô tả việc — API chấm điểm]
+  AN[Chấm một cặp CV–việc — điểm và thứ tự gợi ý]
   UI --> JOB
   UI --> UP
   UI --> JB
@@ -66,109 +69,95 @@ flowchart TB
   JB --> AN
 ```
 
-**Các bước luồng nghiệp vụ**
-
-1. Người dùng mở **ứng tuyển** hoặc **danh sách ứng viên** (đã đăng nhập).  
-2. **Hồ sơ và tin việc** đọc/ghi qua **máy chủ nghiệp vụ** (đăng nhập, cơ sở dữ liệu, lưu trữ tệp).  
-3. **Chấm điểm trên cùng màn hình:** ứng dụng gọi **dịch vụ chấm điểm** (tải bản tạm, ghép **văn bản mô tả việc**, yêu cầu **phân tích một cặp**).  
-4. **Chủ tin / người nhận việc** quyết định dựa trên điểm và phán đoán, sau đó **máy chủ nghiệp vụ** mới **ghi nhận đơn** hoặc **chấp nhận ứng viên**.
+1. Người dùng đã đăng nhập mở màn ứng tuyển hoặc danh sách ứng viên.  
+2. Thao tác dữ liệu chính đọc/ghi qua **server**.  
+3. Chấm điểm: ứng dụng gọi **dịch vụ chấm điểm** kèm CV tạm và văn bản mô tả việc.  
+4. Sau khi **người đăng việc** hoặc **người làm tự do** xác nhận, **server** mới ghi nhận đơn hoặc cập nhật trạng thái chấp nhận ứng viên.
 
 ---
 
-## 3. Chuỗi bước nghiệp vụ (từ tải CV đến điểm hiển thị)
+## 3. Chuỗi thao tác API (tóm tắt)
 
-| Bước | Việc làm |
+| Bước | Nội dung |
 | ---- | -------- |
-| 1 | Gửi **tệp CV** (thường định dạng PDF) lên dịch vụ chấm → nhận **mã bản ghi CV** tạm |
-| 2 | Ghép chữ **mô tả việc** từ tin (ứng viên: tiêu đề + thư giới thiệu; chủ tin: tiêu đề + mô tả + yêu cầu) |
-| 3 | Tạo **bản ghi việc** trong dịch vụ chấm → nhận **mã bản ghi việc** |
-| 4 | Gửi **định danh bản CV** + **định danh bản việc** → **chuỗi suy luận** (tương đồng ngữ nghĩa → tái xếp hạng → quy tắc) → **điểm tổng hợp** và nhãn mức khớp (phục vụ **lọc / sắp** trên bảng) |
-| 5 | Giao diện hiển thị; ánh xạ nhãn theo **ngưỡng điểm** và **bản dịch / bản địa hóa** giao diện |
+| 1 | Đẩy tệp CV thường là PDF lên dịch vụ chấm điểm, nhận định danh bản ghi CV tạm. |
+| 2 | Ghép mô tả việc từ tin: người làm tự do lấy tiêu đề và thư giới thiệu, người đăng việc lấy tiêu đề mô tả và yêu cầu. |
+| 3 | Tạo bản ghi việc trong dịch vụ chấm → nhận định danh bản ghi việc. |
+| 4 | Gửi định danh CV và định danh việc → thực thi **B1→B5** → **embedding_score**, **rerank_score**, **final_score** và nhãn kết luận. |
+| 5 | Hiển thị trên giao diện theo ngưỡng điểm và cấu hình ngôn ngữ. |
 
 ---
 
-## 4. Bên trong dịch vụ chấm điểm (chi tiết bước kỹ thuật)
+## 4. Công thức và quy tắc điểm
 
-Ở mức **tổng hợp**, bên trong gồm: **mô hình nhúng văn bản** (tạo **vector** đặc trưng cho từng đoạn), **bước đo độ tương đồng ngữ nghĩa**, **bước tái xếp hạng** (so sánh sâu từng **cặp** nếu cần), rồi **điều chỉnh theo quy tắc nghiệp vụ** để ra **điểm và nhãn**. Đây là **lớp suy luận** hỗ trợ **xếp thứ tự đọc ứng viên** trước khi **người duyệt** ra quyết định. Môi trường phát triển có thể **lưu bản chụp kết quả** phục vụ kiểm thử.
-
-### 4.1. Từ tải lên đến xếp hạng nhiều người
+### Sơ đồ B1 → B5
 
 ```mermaid
-%%{init: {"flowchart": {"curve": "linear", "padding": 10, "rankSpacing": 38}}}%%
+%%{init: {"flowchart": {"curve": "linear", "padding": 10, "rankSpacing": 36}}}%%
 flowchart TB
-  TaiLieu[Tệp CV] --> EX[Trích chữ]
-  EX --> C1[Chuẩn hóa]
-  C1 --> S1[CV → dạng số]
-  JT[Mô tả việc] --> C2[Chuẩn hóa]
-  C2 --> S2[Việc → dạng số]
-  S1 --> KHO[(Lưu tạm)]
-  S2 --> KHO
-  KHO --> RANK[Xếp hạng nhiều người]
-  RANK --> OUT[Danh sách xếp theo điểm — gợi ý lọc]
+  B1[B1 Tiền xử lý CV và job] --> B2[B2 Embedding CV và job]
+  B2 --> B3{B3 Nhiều CV?}
+  B3 -->|Có| L3[Cosine — lọc nhanh theo job]
+  B3 -->|Một cặp| B4[B4 Rerank CrossEncoder bge-reranker-base → 0–100]
+  L3 --> B4
+  B4 --> B5[B5 Trọng số + penalty + boost]
+  B5 --> OUT[Nhãn và giải thích]
 ```
 
-**Các bước luồng nghiệp vụ**
+Không có thêm bước xếp hạng trung gian sau bước lọc nhanh.
 
-1. Ít nhất **một CV** và **một mô tả việc** đã vào dịch vụ chấm.  
-2. Trích chữ, chuẩn hóa, chuyển sang dạng số; lưu tạm cho các lần gọi sau.  
-3. **Một lần gọi xếp hạng:** lọc nhanh theo độ gần rồi chấm sâu từng ứng viên → trả **phần đầu** danh sách — **cùng ý tưởng** với vòng lặp “phân tích từng cặp” trên giao diện, khác cách đóng gói.  
-4. **Giao diện hiện tại** thường dùng **phân tích từng ứng viên** (bảng bấm chấm từng dòng); có thể chuyển sang **một lần xếp hạng** khi cần tối ưu mà **không đổi** luồng nghiệp vụ tuyển.
+### embedding_score
 
-### 4.2. Phân tích một cặp (luồng chính trên màn hình)
+Độ tương đồng ngữ nghĩa giữa hai vector bằng Cosine, quy về thang **0–100**.
 
-```mermaid
-%%{init: {"flowchart": {"curve": "linear", "padding": 8, "rankSpacing": 36}}}%%
-flowchart TB
-  A[Chuẩn hóa CV & việc] --> B[Biểu diễn số hai phía]
-  B --> C[Điểm gần giống — 0 đến 100]
-  B --> D[Điểm xếp hạng lại — 0 đến 100]
-  C --> E{Lớp xếp hạng lại tin cậy?}
-  D --> E
-  E -->|Không| F[Ưu tiên điểm gần giống]
-  E -->|Có| G[Giữ điểm xếp hạng lại]
-  F --> H[Gộp trọng số → điểm tổng]
-  G --> H
-  H --> I{Khác lĩnh vực rõ rệt?}
-  I -->|Có| J[Áp quy tắc trừ]
-  I -->|Không| K[Không trừ thêm]
-  J --> L[Điều chỉnh nghiệp vụ]
-  K --> L
-  L --> M[Giữ trong khoảng 0–100]
-  M --> N[Nhãn mức khớp]
-```
+| Khoảng điểm | Diễn giải |
+| ----------- | --------- |
+| >85 | Rất gần về nghĩa |
+| 70–85 | Có liên quan |
+| <70 | Ít liên quan |
 
-**Các bước luồng nghiệp vụ**
+### rerank_score
 
-1. So **CV** và **mô tả việc** như hai văn bản (đầu vào của **chuỗi suy luận**).  
-2. Điểm **gần giống** + điểm **xếp hạng lại**; xử lý khi lớp xếp hạng lại không tin cậy.  
-3. **Gộp trọng số** và **quy tắc** (ví dụ lĩnh vực khác nhau).  
-4. Chuẩn hóa thang điểm và **nhận xét** hiển thị — phục vụ người **đọc nhanh** khi lọc.
+So khớp sâu bằng mô hình AI, thang **0–100**.
 
-### 4.3. Xếp hạng nhiều CV
+| Khoảng điểm | Diễn giải |
+| ----------- | --------- |
+| >70 | Rất phù hợp |
+| 50–70 | Mức trung bình |
+| <50 | Không phù hợp |
 
-Lọc nhanh theo độ gần trong không gian số → chấm sâu nhóm ứng viên gần nhất (ví dụ mở rộng gấp đôi nhóm đầu rồi thu hẹp lại).
+### final_score
 
-```mermaid
-%%{init: {"flowchart": {"curve": "linear", "padding": 8, "rankSpacing": 34}}}%%
-flowchart TB
-  A[Nạp mô tả việc] --> B[Đưa việc về dạng số]
-  B --> C[Đưa từng CV về dạng số]
-  C --> D[Lọc gần đúng]
-  D --> E[Chọn nhóm ưu tiên]
-  E --> F[Chấm sâu từng người trong nhóm]
-  F --> G[Sắp theo điểm cuối]
-  G --> H[Trả danh sách đã xếp]
-```
+**final_score = 0.3 × embedding_score + 0.7 × rerank_score**
 
-**Các bước luồng nghiệp vụ**
+### Điều chỉnh bổ sung
 
-1. Có **mô tả việc** và **danh sách CV** trong dịch vụ chấm.  
-2. Lọc nhanh → giảm số lần chạy mô hình nặng.  
-3. Áp **cùng công thức** như mục 4.2 cho từng ứng viên còn lại.  
-4. Trả **bảng xếp hạng** — **danh sách gợi ý thứ tự duyệt** cho giao diện hoặc cho lớp gọi nội bộ.
+| Quy tắc | Mô tả |
+| ------- | ----- |
+| Rerank fallback | Khi rerank khoảng **50** nghĩa là mức không phân hóa rõ, tăng trọng **embedding_score** trong tổng hợp. |
+| Domain penalty | Phát hiện lệch ngành / lĩnh vực → áp hệ số **giảm 50%** theo cách triển khai trong mã nguồn. |
+| Boost cùng ngành | **Embedding_score** cao và cùng domain → cộng **+5**. |
+| Boost QA / kiểm thử | Cặp mô tả QA đối chiếu QA → cộng **+5**. |
+| Soft decisiveness | Điều chỉnh nhẹ để tăng độ phân tán: điểm tổng đã cao được nâng nhẹ, điểm đã thấp được hạ nhẹ. |
+
+### Nhãn kết luận theo điểm cuối
+
+| Khoảng điểm | Nhãn giao diện |
+| ----------- | -------------- |
+| >75 | Strong match |
+| 50–75 | Moderate |
+| <50 | Low |
+
+### Giải thích nhãn cho người dùng
+
+| Nhãn | Ý nghĩa hiển thị |
+| ------------------ | ---------------- |
+| Strong match | Rất phù hợp |
+| Moderate match | Trung bình |
+| Low match | Không phù hợp |
 
 ---
 
-## 5. Kết quả trả về giao diện
+## 5. Đầu ra phục vụ giao diện
 
-Mỗi lần **suy luận một cặp**, dịch vụ trả về **điểm tương đồng nhanh**, **điểm sau bước tái xếp hạng** (nếu có), **điểm tổng hợp cuối** và **nhận xét ngắn** (từ mô hình hoặc quy tắc). Giao diện **ánh xạ** các giá trị này sang **nhãn dễ đọc** theo **ngưỡng** và **ngôn ngữ hiển thị**. Bộ dữ liệu trả về chỉ phục vụ **lọc và sắp xếp** trên **bảng ứng viên** — **không** kích hoạt **từ chối** hay **trúng tuyển** thay **chủ tin**.
+Mỗi lần chấm **một cặp** CV–việc, dịch vụ trả **embedding_score**, **rerank_score**, **final_score** sau các bước chỉnh nếu có, nhãn **Strong / Moderate / Low** và trường **explanation**. Dùng để **lọc và sắp xếp**; **không** tự **từ chối** hay **trúng tuyển** thay **người đăng việc**.
