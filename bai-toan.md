@@ -22,9 +22,6 @@ Khi hai bên **bất đồng** sau khi nộp bài, cần **quy trình có thứ 
 
 Nhiều mốc (**nhận hồ sơ**, **ký**, **nộp bài**, **duyệt**, **chứng cứ**, **phiếu trọng tài**) nếu chỉ nhờ người nhớ sẽ **trễ hạn** hoặc **không đồng bộ** với **tiền trên blockchain**. Cần **máy quét theo lịch** (cron) và **thông báo**.
 
-### 1.5 Kiến trúc tổng thể
-
-Cần tách rõ: **giao diện**, **server nghiệp vụ**, **lớp blockchain**, **bộ chấm điểm tách tải**, **job nền** — để mở rộng và bảo trì.
 
 ---
 
@@ -42,7 +39,7 @@ Luồng nghiệp vụ end-to-end (tin → hợp đồng → làm bài → tranh 
 
 ---
 
-## 3. Theo vai — link nhanh
+## 3. Theo vai
 
 | Góc nhìn | File |
 | -------- | ---- |
@@ -54,7 +51,7 @@ Luồng nghiệp vụ end-to-end (tin → hợp đồng → làm bài → tranh 
 
 ---
 
-## 4. Sơ đồ ánh xạ (tóm tắt)
+## 4. Sơ đồ
 
 ```
 Hiện trạng                          Giải pháp trong tài liệu
