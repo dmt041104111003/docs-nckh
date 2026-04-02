@@ -2,51 +2,58 @@
 
 Khi **người đăng việc** và **người làm tự do** bất đồng sau khi bàn giao, cần **người trung lập** có quy trình rõ ràng. Vai **trọng tài chuyên môn** chỉ can thiệp **trong các vụ tranh chấp**.
 
-Trọng tài **không** quản lý toàn bộ người dùng, **không** tự đóng tin hay tự xử lý hết hạn thay **hệ thống**. Việc nhắc hạn và chạy theo lịch do tài liệu **hệ thống** mô tả.
+Trọng tài **không** quản lý toàn bộ người dùng, **không** tự đóng tin hay tự xử lý hết hạn thay **hệ thống**. Việc nhắc hạn và chạy theo [**cron**](thuat-ngu.md#cron) (job nền) do tài liệu **hệ thống** mô tả. Thuật ngữ: [bảng thuật ngữ](thuat-ngu.md).
 
 ---
 
-## Nhiệm vụ chính
+## Bảng nhiệm vụ và phạm vi
 
-| Việc | Mô tả |
-| ---- | ----- |
-| Tiếp nhận vụ | Vào danh sách vụ tranh chấp, đọc tin và chứng cứ hai bên |
-| Điều phối | Yêu cầu **người làm tự do** trả lời hoặc bổ sung chứng cứ trong thời hạn |
-| Phân xử | Ghi nhận bên được xử đúng và lý do, khi quy trình cho phép |
-| Bỏ phiếu nhiều vòng | Xem phiếu đến lượt, bỏ phiếu, ký xác nhận nếu quy định có |
-| Kết thúc vụ | Khi đủ điều kiện, làm bước xác nhận kết thúc để **chia tiền đang giữ** và **cập nhật uy tín** đúng điều khoản |
+| Nhiệm vụ | Phạm vi |
+| -------- | ------- |
+| **Tiếp nhận** vụ được giao | Chỉ **vụ tranh chấp** mà **hệ thống** đã đưa vào danh sách cần xử lý **theo vòng** (trọng tài được **gán ngẫu nhiên** cho vòng đó). |
+| **Bỏ phiếu** trong vòng | Chỉ **phiếu của vòng hiện tại** sau khi **người làm tự do** và **người đăng việc** đã **phản hồi trong hạn**; không xử lý thay cả vụ trong một lần tùy ý. |
+| **Theo dõi hạn** (phản hồi nếu luồng yêu cầu) | Trong giới hạn **vụ / vòng được gán**; nếu **quá hạn bỏ phiếu**, **hệ thống** gán trọng tài khác — không tự giữ vụ vượt quy tắc. |
+| Đọc tài liệu, bằng chứng hai bên | Chỉ vụ **được phân quyền xem** trong vòng đó; không truy cập tin nhắn / hồ sơ ngoài nghiệp vụ tranh chấp nếu không được thiết kế cho phép. |
+
+**Ngoài phạm vi:** quản lý user toàn nền tảng, tự **đóng tin** / **đổi hạn tin**, chạy **cron** quét hết hạn, **cập nhật kết quả tổng hợp sau 3 vòng** (do **hệ thống**); **không nhập điểm uy tín tay** — điểm do luật hợp đồng / blockchain sau khi vụ kết thúc.
 
 ---
 
-## Luồng xử lý tranh chấp
+## Luồng tranh chấp: ba vòng cố định
+
+Một vụ tranh chấp chạy **đủ ba vòng**. **Mỗi vòng** luôn theo thứ tự:
+
+1. **Hệ thống** gán **ngẫu nhiên** một **trọng tài** cho vòng đó.  
+2. **Người làm tự do** phản hồi và nộp **bằng chứng** trong hạn.  
+3. **Người đăng việc** phản hồi trong hạn.  
+4. **Trọng tài** được gán **bỏ phiếu** cho vòng đó.
+
+Hết bước 4 của một vòng, nếu **chưa đủ ba vòng** thì **hệ thống** quay lại bước 1 với **trọng tài ngẫu nhiên mới** cho vòng kế tiếp.
+
+Nếu **trọng tài đã gán quá thời gian** mà không hoàn thành bước bỏ phiếu, **hệ thống** **gán ngẫu nhiên trọng tài khác** và tiếp tục; chi tiết có lặp lại bước hai bên hay chỉ mở lại bước phiếu **tùy điều khoản triển khai**.
+
+Sau **hết vòng thứ ba**, **hệ thống** **cập nhật kết quả tranh chấp** và **gửi thông báo**. **Hoàn tiền**, giải ngân tiền giữ và các giao dịch **ghi trên blockchain** đi kèm chỉ thực hiện **theo điều kiện hợp đồng**.
 
 ```mermaid
-flowchart TD
-  A[Trọng tài đăng nhập] --> B[Danh sách vụ chờ xử lý]
-  B --> C{Hướng xử lý}
-  C --> D[Yêu cầu người làm tự do phản hồi và hạn trả lời]
-  C --> E[Phân xử: bên đúng và ghi chú]
-  C --> F[Nhiều vòng: xem phiếu của tôi]
-  F --> G[Bỏ phiếu, ký nếu cần]
-  C --> H[Bước kết thúc: xác nhận đóng vụ]
-  D --> I[Hệ thống cập nhật và gửi thông báo]
-  E --> I
-  G --> I
-  H --> I
+flowchart TB
+  START[Vụ tranh chấp mở] --> A[Hệ thống gán ngẫu nhiên trọng tài cho vòng hiện tại]
+  A --> B[Người làm tự do phản hồi và bằng chứng trong hạn]
+  B --> C[Người đăng việc phản hồi trong hạn]
+  C --> D[Trọng tài được gán bỏ phiếu]
+  D --> TO{Trọng tài quá hạn không bỏ phiếu?}
+  TO -->|Có: gán trọng tài khác| A
+  TO -->|Không| N{Đã đủ 3 vòng?}
+  N -->|Chưa| A
+  N -->|Đủ 3 vòng| E[Hệ thống cập nhật kết quả, thông báo; blockchain theo hợp đồng]
 ```
 
-**Hai nhánh bên phải trên sơ đồ**
+**Cách đọc**
 
-1. **Xem phiếu → bỏ phiếu → ký nếu cần:** dùng khi tranh chấp có **nhiều vòng**, nhiều người cùng tham gia quyết định. Trọng tài làm **trong lúc vụ chưa kết thúc**.
+- **A** xuất hiện **đầu mỗi vòng mới** và **lại sau khi thay trọng tài** vì hết hạn.  
+- **B → C → D** là nội dung **một vòng**: **người làm tự do** trước, **người đăng việc** sau, rồi **phiếu trọng tài**.  
+- **N**: chưa đủ ba vòng thì quay về **A** để mở **vòng kế** với trọng tài random mới; đủ ba vòng thì **E**.
 
-2. **Bước kết thúc:** dùng khi **đã có kết quả** và cần **một lần xác nhận cuối** để đóng vụ trên sổ công khai, chia tiền và cập nhật uy tín. Thường là **bước sau cùng**, có thể nối sau các vòng phiếu.
-
-**Thứ tự nghiệp vụ**
-
-1. Đăng nhập, mở danh sách vụ tranh chấp đang chờ.  
-2. Đọc hồ sơ, tin liên quan, chứng cứ.  
-3. Chọn: yêu cầu phản hồi, phân xử, tham gia phiếu, hoặc bước kết thúc khi đủ điều kiện.  
-4. **Hệ thống** cập nhật trạng thái và thông báo các bên.
+Trên giao diện, trọng tài **chỉ thấy** **phiếu hoặc vụ được gán trong từng vòng**; không có màn hình chọn nhánh xử lý cho cả vụ theo mô hình một vòng như phiên bản trước.
 
 ---
 
@@ -64,4 +71,4 @@ flowchart LR
   BE --> W[Cập nhật UT và KUT theo điều khoản]
 ```
 
-Các tình huống uy tín khác xem **người đăng việc** và **người làm tự do**. Hết hạn chứng cứ do **hệ thống** quét: xem **hệ thống** và **chuỗi khối**.
+Các tình huống uy tín khác xem **người đăng việc** và **người làm tự do**. Hết hạn chứng cứ do **hệ thống** quét: xem **hệ thống** và [blockchain](blockchain.md).

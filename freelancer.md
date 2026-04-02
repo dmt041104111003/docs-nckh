@@ -2,6 +2,24 @@
 
 Vai trò **người làm tự do**: tìm tin, **xem điểm khớp CV** trước khi nộp đơn nếu dùng, **ứng tuyển**, **ký hợp đồng**, **làm và nộp bài**, **chờ duyệt** hoặc **tham gia tranh chấp** đúng thời hạn.
 
+---
+
+## Bảng nhiệm vụ và phạm vi
+
+| Nhiệm vụ | Phạm vi |
+| -------- | ------- |
+| Cập nhật **hồ sơ**, **ví**, thông tin hiển thị | Chỉ **tài khoản và dữ liệu** do mình sở hữu trên nền tảng. |
+| Tìm tin, **ứng tuyển**, gửi CV / thư giới thiệu | **Tin đang mở** theo quy tắc nền tảng; **đơn ứng tuyển** do mình tạo cho từng tin. |
+| **Chấm điểm CV** (xem trước) khi mở màn ứng tuyển | **Một cặp** CV–mô tả việc của tin đang xem; không can thiệp đơn người khác. |
+| Được chọn → **ký hợp đồng**, làm việc | **Hợp đồng** mình là bên **người làm tự do**; nội dung và bước blockchain theo điều khoản. |
+| **Nộp bài**, sửa theo yêu cầu | **Gói nộp** trong phạm vi **hợp đồng** đang thực hiện. |
+| **Tranh chấp**: phản hồi, chứng cứ | Chỉ **vụ** mà mình là **bên có liên quan**; đúng **vòng và hạn**. |
+| Đọc **điểm uy tín** | Như **người đăng việc**; không tự sửa điểm trên blockchain. |
+
+**Ngoài phạm vi:** chọn người thay **người đăng việc**, bỏ phiếu trọng tài, chạy cron / giao dịch hệ thống thay người dùng (trừ khi chính mình ký qua ví).
+
+---
+
 ## Tóm tắt trạng thái
 
 Tin mở → ứng tuyển → được chọn → chờ ký → ký xong → đang làm → đã nộp → duyệt hoặc sửa → hoàn thành hoặc tranh chấp.
@@ -32,7 +50,7 @@ flowchart TB
 ```mermaid
 flowchart TB
   A[Mở màn ứng tuyển] --> B[Tải CV lên hệ thống]
-  B --> C[Gọi dịch vụ chấm điểm với CV và mô tả tin]
+  B --> C[Gọi bộ chấm điểm CV với CV và mô tả tin]
   C --> D[Hiển thị điểm khớp]
   D --> E[Gửi đơn kèm CV đã lưu]
 ```
@@ -47,7 +65,7 @@ Chi tiết kỹ thuật: [cv-ai-scoring](cv-ai-scoring.md).
 flowchart TB
   A[Chờ ký] --> B[Đọc điều khoản]
   B --> C{Quyết định}
-  C -->|Nhận việc| D[Ký hợp đồng và bước chuỗi nếu có]
+  C -->|Nhận việc| D[Ký hợp đồng và bước blockchain nếu có]
   C -->|Không nhận| E[Từ chối ký theo quy định]
   D --> F[Đang làm]
   F --> G[Nộp sản phẩm]
@@ -64,13 +82,13 @@ flowchart TB
 flowchart TB
   A[Người đăng việc mở tranh chấp] --> B[Phản hồi và đưa chứng cứ đúng hạn]
   B --> C[Ký xác nhận nếu quy định có]
-  C --> D[Chờ trọng tài và kết quả trên chuỗi]
+  C --> D[Chờ trọng tài và kết quả trên blockchain]
 ```
 
 Rút khỏi việc khi được phép: gửi đơn xin rút và lý do, làm bước ký kèm nếu có.
 
 1. Nhận thông báo tranh chấp, phản hồi trong hạn.  
-2. Theo các bước ký trên chuỗi nếu cần.  
+2. Theo các bước ký trên blockchain nếu cần.  
 3. Chờ **trọng tài chuyên môn** và **hệ thống** xử lý hết hạn khi áp dụng.  
 
 Chi tiết: [trọng tài](trong-tai.md), [hệ thống](system.md).
@@ -79,7 +97,7 @@ Chi tiết: [trọng tài](trong-tai.md), [hệ thống](system.md).
 
 ## Điểm uy tín phía người làm tự do
 
-Điểm hiển thị trên hồ sơ và nơi **người đăng việc** xem ứng viên. Quy tắc trong điều khoản ứng dụng và phần điểm uy tín trong [chuỗi khối](blockchain.md).
+Điểm hiển thị trên hồ sơ và nơi **người đăng việc** xem ứng viên. Quy tắc trong điều khoản ứng dụng và phần điểm uy tín trong [blockchain](blockchain.md).
 
 | Tình huống | Tin cậy | Bất tin cậy |
 | --- | --- | --- |

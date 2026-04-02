@@ -1,6 +1,6 @@
 # Luồng tổng quan nền tảng
 
-Tóm lược vai **người đăng việc**, **người làm tự do**, **trọng tài chuyên môn**; các phần **web**, **server**, **dịch vụ chấm điểm CV**, **chuỗi khối**, **hệ thống**; và vòng đời **tin tuyển → hợp đồng → làm bài → tranh chấp nếu có**. Kiến trúc: [architecture](architecture.md).
+Tóm lược vai **người đăng việc**, **người làm tự do**, **trọng tài chuyên môn**; các phần **web**, **server**, **bộ chấm điểm CV**, **blockchain**, **hệ thống**; và vòng đời **tin tuyển → hợp đồng → làm bài → tranh chấp nếu có**. Kiến trúc: [architecture](architecture.md). Thuật ngữ kỹ thuật: [bảng thuật ngữ](thuat-ngu.md).
 
 ---
 
@@ -11,12 +11,12 @@ Tóm lược vai **người đăng việc**, **người làm tự do**, **trọn
 | Người đăng việc | Đăng tin chấm CV chọn người duyệt tranh chấp khi cần | [poster](poster.md) |
 | Người làm tự do | Xem điểm CV ứng tuyển ký làm nộp bài | [freelancer](freelancer.md) |
 | Trọng tài chuyên môn | Chỉ xử lý tranh chấp | [trọng tài](trong-tai.md) |
-| Hệ thống | Hết hạn thông báo gọi chuỗi theo lịch | [hệ thống](system.md) |
+| Hệ thống | Hết hạn, thông báo, giao dịch blockchain theo **cron jobs** | [hệ thống](system.md) |
 | Chấm điểm CV | So khớp CV với tin khi đang tuyển | [cv-ai-scoring](cv-ai-scoring.md) |
-| Điểm uy tín | Ghi trên chuỗi database có bản đọc | [chuỗi khối](blockchain.md) |
-| Chuỗi khối | Giữ tiền tranh chấp cập nhật điểm | [chuỗi khối](blockchain.md) |
+| Điểm uy tín | Ghi trên blockchain; database giữ bản sao để hiển thị | [blockchain](blockchain.md) |
+| Blockchain | Giữ tiền, tranh chấp, cập nhật điểm | [blockchain](blockchain.md) |
 
-Cột **Đọc thêm** dẫn vào tài liệu chi tiết. Chấm điểm chỉ trong giai đoạn tuyển.
+Cột **Đọc thêm** dẫn vào tài liệu chi tiết; trong mỗi file vai có **bảng nhiệm vụ và phạm vi** (task nằm trong giới hạn nào, việc gì **không** thuộc vai). Chấm điểm chỉ trong giai đoạn tuyển.
 
 ---
 
@@ -44,7 +44,7 @@ flowchart TB
 **Thứ tự nghiệp vụ**
 
 1. **Người đăng việc** tạo tin mở nhận hồ sơ.  
-2. **Người làm tự do** dùng **dịch vụ chấm điểm** nếu cần rồi nộp đơn **người đăng việc** có thể chấm từng người hoặc cả bảng trước khi chọn.  
+2. **Người làm tự do** dùng **bộ chấm điểm CV** nếu cần rồi nộp đơn **người đăng việc** có thể chấm từng người hoặc cả bảng trước khi chọn.  
 3. **Người đăng việc** chọn một người.  
 4. Hai bên **ký hợp đồng**.  
 5. **Người làm tự do** nộp bài **người đăng việc** duyệt hoặc yêu cầu sửa.  
@@ -64,10 +64,10 @@ flowchart TB
   end
   Web[Giao diện web]
   May[Server]
-  Cham[Dịch vụ chấm điểm]
+  Cham[Bộ chấm điểm CV]
   DB[(Dữ liệu và tệp)]
-  Chain[Chuỗi khối]
-  Hen[Lịch quét]
+  Chain[Blockchain]
+  Cron[Cron jobs]
   P --> Web
   F --> Web
   A --> Web
@@ -75,27 +75,25 @@ flowchart TB
   Web --> Cham
   May --> DB
   May --> Chain
-  Hen --> May
+  Cron --> May
 ```
 
 1. Ba nhóm đều vào **web** rồi **server** cho tài khoản tin hồ sơ tiền giữ.  
-2. Khi đang nhận hồ sơ **web** gọi **dịch vụ chấm điểm** địa chỉ cấu hình sẵn đơn và CV chính vẫn lưu qua **server**.  
-3. **Server** lưu dữ liệu và xử lý tiền trên **chuỗi khối** khi có giao dịch.  
-4. **Lịch quét** chạy nền đồng bộ hạn và chuỗi.
+2. Khi đang nhận hồ sơ **web** gọi **bộ chấm điểm CV** địa chỉ cấu hình sẵn đơn và CV chính vẫn lưu qua **server**.  
+3. **Server** lưu dữ liệu và xử lý tiền trên **blockchain** khi có giao dịch.  
+4. **Cron jobs** chạy nền, đồng bộ hạn với **blockchain**.
 
 ---
 
 ## 4. Tranh chấp
+
+Một vụ gồm **ba vòng** cố định: mỗi vòng **hệ thống** gán **ngẫu nhiên trọng tài**, hai bên **phản hồi** theo thứ tự **người làm tự do** rồi **người đăng việc**, sau đó **trọng tài** bỏ phiếu; hết ba vòng thì **hệ thống** cập nhật kết quả và thông báo. Chi tiết và sơ đồ: [trọng tài](trong-tai.md).
 
 ```mermaid
 flowchart TB
   V[Vụ tranh chấp]
   P[Người đăng việc] --> V
   F[Người làm tự do] --> V
-  V --> T[Trọng tài điều phối]
-  V --> M[Hệ thống xử lý khi đến hạn]
+  V --> R[3 vòng: random trọng tài phản hồi hai bên phiếu]
+  R --> M[Hệ thống kết quả và hạn]
 ```
-
-1. Hai bên cùng tham gia một vụ tranh chấp.  
-2. **Trọng tài chuyên môn** điều phối và phân xử hoặc phiếu.  
-3. **Hệ thống** vẫn quét hạn song song.

@@ -1,14 +1,14 @@
-# Chuỗi khối: tiền giữ, tranh chấp, điểm uy tín
+# Blockchain: tiền giữ, tranh chấp, điểm uy tín
 
-Làm việc từ xa cần **chỗ giữ tiền an toàn**, **cách xử khiếu nại có thể kiểm tra**, và **điểm uy tín** lặp lại theo thời gian. **Chuỗi khối** công khai phục vụ các phần này. **Server** vẫn lưu tin đơn và tin nhắn để tra cứu nhanh; **chuỗi** giữ phần **tiền đã khóa**, **bước tranh chấp**, và **điểm** theo quy tắc đã triển khai.
+[**Remote work**](thuat-ngu.md#remote-work) cần **chỗ giữ tiền an toàn**, **cách xử khiếu nại có thể kiểm tra**, và **điểm uy tín** lặp lại theo thời gian. [**Blockchain**](thuat-ngu.md#blockchain) ở đây là **mạng công khai**: mọi thay đổi về **tiền đã khóa**, **bước tranh chấp** và **điểm** đều ghi thành [**giao dịch**](thuat-ngu.md#transaction) có thể đối chiếu, không nằm kín trên một máy chủ. [**Server**](thuat-ngu.md#server) vẫn lưu tin đơn và tin nhắn để tra cứu nhanh; **blockchain** giữ phần đã cam kết theo quy tắc đã triển khai. Thuật ngữ: [bảng thuật ngữ](thuat-ngu.md).
 
 ---
 
-## Chuỗi khối
+## Blockchain và database
 
-Chuỗi **không thay** toàn bộ cơ sở dữ liệu. Tin ứng tuyển chat và hồ sơ vẫn ở **database**. Chuỗi đảm nhiệm phần **sau khi đã cam kết** khó thay đổi một chiều: số tiền giữ, điều kiện trả, luồng tranh chấp, cập nhật điểm.
+Blockchain **không thay** toàn bộ cơ sở dữ liệu. Tin ứng tuyển, chat và hồ sơ vẫn ở **database**. Blockchain đảm nhiệm phần **sau khi đã cam kết** khó sửa ngầm: số tiền giữ, điều kiện trả, luồng tranh chấp, cập nhật điểm.
 
-**Quy tắc chạy trên mạng** được gọi là hợp đồng thông minh. Nền tảng dùng mạng **Aptos** và ngôn ngữ **Move**. Người đọc tài liệu luồng chỉ cần biết: mọi thay đổi tiền và điểm trên chuỗi đều là **giao dịch** đã được **xác thực**.
+**Quy tắc chạy trên mạng** được gọi là hợp đồng thông minh. Nền tảng dùng mạng **Aptos** và ngôn ngữ **Move**. Người đọc tài liệu luồng chỉ cần biết: mọi thay đổi tiền và điểm trên blockchain đều là **giao dịch** đã được **xác thực**.
 
 ---
 
@@ -16,13 +16,13 @@ Chuỗi **không thay** toàn bộ cơ sở dữ liệu. Tin ứng tuyển chat 
 
 Một **giao dịch** là gói thao tác gửi lên mạng. **Ký bằng ví** chứng minh người đó đồng ý, ví dụ khóa tiền giữ chấp nhận nghiệm thu mở tranh chấp. **Địa chỉ ví** gắn với điểm uy tín và luồng tiền.
 
-Một số việc **đến hạn** do **server** hoặc **lịch quét** thực hiện bằng **ví vận hành** đã được phép trong thiết kế, để tự động mà vẫn kiểm tra được trên chuỗi.
+Một số việc **đến hạn** do **server** (request) hoặc **cron job** gọi **ví vận hành** đã được phép trong thiết kế, để tự động mà vẫn kiểm tra được trên blockchain.
 
 ---
 
 ## Ký quỹ và trạng thái việc
 
-**Tiền giữ** nằm trong hợp đồng cho đến khi thỏa điều kiện: nghiệm thu, hoàn cho người đăng việc nếu không tuyển được, hoặc chuyển sang tranh chấp. Trạng thái **đang tuyển đang làm chờ duyệt đã đóng** phải **khớp** giữa **database** và **chuỗi**. Nếu lệch, thường **chuỗi** là chuẩn cho **tiền và điểm**.
+**Tiền giữ** nằm trong hợp đồng cho đến khi thỏa điều kiện: nghiệm thu, hoàn cho người đăng việc nếu không tuyển được, hoặc chuyển sang tranh chấp. Trạng thái **đang tuyển đang làm chờ duyệt đã đóng** phải **khớp** giữa **database** và **blockchain**. Nếu lệch, thường **blockchain** là chuẩn cho **tiền và điểm**.
 
 ---
 
@@ -40,7 +40,7 @@ flowchart TB
     N1[Người đăng việc]
     N2[Người làm tự do]
   end
-  subgraph giua[Trên chuỗi]
+  subgraph giua[Trên blockchain]
     HD1[Giữ tiền và trạng thái việc]
     HD2[Tranh chấp]
     HD3[Bảng uy tín]
@@ -62,7 +62,7 @@ flowchart TB
 1. **Người đăng việc** khóa tiền khi đăng tin theo điều khoản.  
 2. Theo tiến độ tiền trả cho người làm hoàn cho người đăng việc hoặc vào nhánh tranh chấp tùy trạng thái chữ ký và hạn.  
 3. **Server** lưu trạng thái và mã giao dịch; có thể gửi thêm giao dịch khi hết hạn.  
-4. **Điểm tin cậy và bất tin cậy** cập nhật trong hợp đồng uy tín khi các bước giữ tiền và tranh chấp **kết thúc đúng luật**. Database có thể giữ bản sao để hiển thị và cần **khớp** với chuỗi.
+4. **Điểm tin cậy và bất tin cậy** cập nhật trong hợp đồng uy tín khi các bước giữ tiền và tranh chấp **kết thúc đúng luật**. Database có thể giữ bản sao để hiển thị và cần **khớp** với blockchain.
 
 ---
 
@@ -80,26 +80,13 @@ flowchart TB
   S5 -->|Có khiếu nại| DIS[Sang tranh chấp]
 ```
 
-**Hết hạn do máy quét** chạy song song: ví dụ quá hạn ký quá hạn nộp quá hạn nhận hồ sơ **hệ thống** cập nhật và có thể gửi giao dịch phù hợp. Chi tiết: [hệ thống](system.md).
+**Hết hạn do cron job** quét chạy song song: ví dụ quá hạn ký, quá hạn nộp, quá hạn nhận hồ sơ — **hệ thống** cập nhật và có thể gửi giao dịch phù hợp. Chi tiết: [hệ thống](system.md).
 
 ---
 
 ## Tranh chấp
 
-```mermaid
-flowchart TB
-  F1[Mở tranh chấp] --> F2[Lưu vụ có mã trên chuỗi nếu cần]
-  F2 --> F3[Người làm tự do phản hồi]
-  F3 --> F4{Hết hạn chứng cứ?}
-  F4 -->|Có một bên im| ON1[Xử theo luật mặc định]
-  F4 -->|Chưa| F5[Vòng bỏ phiếu]
-  F5 --> F6[Trọng tài bỏ phiếu]
-  F6 --> F8[Kết thúc chia tiền]
-  ON1 --> Ket[Ghi nhận]
-  F8 --> Ket
-```
-
-Quy trình **trọng tài chuyên môn**: [trọng tài](trong-tai.md).
+Sau khi mở vụ và lưu mã trên blockchain nếu cần, vụ chạy **ba vòng** theo đúng thứ tự **trọng tài ngẫu nhiên → hai bên phản hồi → phiếu**, rồi **hệ thống** chốt kết quả; hết hạn chứng cứ hoặc phiếu vẫn do **hệ thống** và luật hợp đồng xử lý song song. Sơ đồ đầy đủ: [trọng tài](trong-tai.md).
 
 ---
 
@@ -120,7 +107,7 @@ Luồng theo vai: [người đăng việc](poster.md), [người làm tự do](f
 
 ---
 
-## Việc hệ thống thường làm trên chuỗi
+## Việc hệ thống thường làm trên blockchain
 
 | Chủ đề | Việc |
 | ------ | ---- |

@@ -4,6 +4,21 @@ Người đăng việc **đăng tin**, **xem ứng viên**, **chấm điểm CV*
 
 ---
 
+## Bảng nhiệm vụ và phạm vi
+
+| Nhiệm vụ | Phạm vi |
+| -------- | ------- |
+| Xin vai, tạo / sửa / đăng tin | Chỉ **tin và nháp** gắn tài khoản mình; ngân sách, hạn, tiền giữ theo điều khoản tin. |
+| Xem danh sách ứng viên, **chấm điểm CV** | Chỉ **tin đang tuyển của mình** và **đơn / CV** ứng viên gửi vào tin đó. |
+| Từ chối hồ sơ, chọn một người, **ký hợp đồng** | **Giao dịch với ứng viên** đã được chọn cho đúng tin; bước blockchain nếu bật. |
+| **Duyệt bài** hoặc yêu cầu sửa | Chỉ **bài nộp** trong **hợp đồng** mình là **người đăng việc**. |
+| **Mở tranh chấp**, phản hồi, chứng cứ | Chỉ **vụ tranh chấp** liên quan **việc / hợp đồng của mình**; đúng **vòng và hạn** do hệ thống quy định. |
+| Đọc **điểm uy tín** hiển thị | Hiển thị theo luật nền tảng / blockchain; **không** tự sửa điểm tay trên blockchain. |
+
+**Ngoài phạm vi:** cấu hình cron, gán trọng tài, quét hết hạn thay toàn hệ thống, phân xử vụ người khác — thuộc **hệ thống** / **trọng tài** theo luồng.
+
+---
+
 ## Đăng ký vai và tạo tin
 
 ```mermaid
@@ -14,12 +29,12 @@ flowchart TD
   D --> E[Điền ngân sách tiền giữ hạn và nội dung]
   E --> F{Xuất bản}
   F -->|Lưu nháp| G[Sửa sau]
-  F -->|Đăng| H[Tin mở nhận hồ sơ và khóa tiền nếu bật chuỗi khối]
+  F -->|Đăng| H[Tin mở nhận hồ sơ và khóa tiền nếu bật blockchain]
 ```
 
 1. Có tài khoản, xin thêm vai **người đăng việc** nếu nền tảng yêu cầu.  
 2. Tạo tin, có thể lưu nháp hoặc đăng ngay.  
-3. Điền ngân sách, thời hạn, nội dung, và **tiền giữ trên chuỗi** nếu bật.  
+3. Điền ngân sách, thời hạn, nội dung, và **tiền giữ trên blockchain** nếu bật.  
 4. Đăng tin: ứng viên thấy tin và có thể ứng tuyển.
 
 ---
@@ -41,7 +56,7 @@ flowchart TD
 1. Xem danh sách người đã ứng tuyển.  
 2. **Chấm điểm CV:** hệ thống lấy CV, so với tiêu đề mô tả và yêu cầu của tin, hiển thị điểm và thứ tự gợi ý.  
 3. Có thể từ chối hồ sơ hoặc đóng tin.  
-4. **Chọn một người** rồi chờ ký hợp đồng, thường kèm bước xác nhận trên chuỗi.  
+4. **Chọn một người** rồi chờ ký hợp đồng, thường kèm bước xác nhận trên blockchain.  
 
 Kỹ thuật chấm điểm: [cv-ai-scoring](cv-ai-scoring.md).
 
@@ -54,7 +69,7 @@ flowchart TD
   A[Đã chọn người] --> B[Xem điều khoản]
   B --> C[Hai bên ký theo thứ tự quy định]
   C --> D{Trước khi ký xong}
-  D -->|Dừng an toàn| E[Hủy trước khi đủ ký kèm bước chuỗi nếu có]
+  D -->|Dừng an toàn| E[Hủy trước khi đủ ký kèm bước blockchain nếu có]
   D -->|Tiếp tục| F[Đủ chữ ký — chuyển sang đang làm]
 ```
 
@@ -70,7 +85,7 @@ flowchart TD
 ```mermaid
 flowchart TD
   A[Người làm tự do đã nộp bài] --> B{Người đăng việc}
-  B -->|Đồng ý| C[Duyệt kèm bước chuỗi nếu có]
+  B -->|Đồng ý| C[Duyệt kèm bước blockchain nếu có]
   B -->|Cần sửa| D[Yêu cầu làm lại và ghi chú]
   B -->|Tranh chấp| E[Mở vụ tranh chấp kèm chứng cứ]
   C --> F[Hoàn thành]
@@ -111,4 +126,4 @@ Phía **người làm tự do** xem [freelancer](freelancer.md).
 
 ---
 
-Một tài khoản có thể vừa đăng việc vừa làm tự do nếu được gán đủ vai. Tiền giữ và hoàn tiền phụ thuộc cấu hình chuỗi và trạng thái việc; hạn tự động xem [hệ thống](system.md).
+Một tài khoản có thể vừa đăng việc vừa làm tự do nếu được gán đủ vai. Tiền giữ và hoàn tiền phụ thuộc cấu hình blockchain và trạng thái việc; hạn tự động xem [hệ thống](system.md).
